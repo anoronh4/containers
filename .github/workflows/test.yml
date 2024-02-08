@@ -16,6 +16,8 @@ jobs:
   dockerfile-changes:
     name: dockerfile-changes
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
     outputs:
       # Expose matched filters as job 'docker-images' output variable
       docker-images: ${{ steps.filter.outputs.changes }}
@@ -36,7 +38,7 @@ jobs:
           done > .github/tags.yml
       - name: debug
         run: cat .github/tags.yml
-      - uses: dorny/paths-filter@master
+      - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: ".github/tags.yml"

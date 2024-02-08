@@ -74,7 +74,7 @@ jobs:
       - name: Build and export to Docker
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: containers/${{ matrix.tags }}/
           file: containers/${{ matrix.tags }}/Dockerfile
           load: true
           tags: ${{ env.REGISTRY }}/${{ steps.docker_repo_name.outputs.name}}:${{steps.docker_repo_version.outputs.version}}

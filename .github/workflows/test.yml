@@ -23,6 +23,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
+      - name: debug
+        run: git log --pretty=format:'%h' -n 2
       - name: Create tags.yml to grab changes
         id: get_tags
         run: |

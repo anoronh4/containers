@@ -22,7 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 'develop'
           fetch-depth: 2
       - name: Create tags.yml to grab changes
         id: get_tags

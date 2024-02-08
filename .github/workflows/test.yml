@@ -34,7 +34,7 @@ jobs:
           done > .github/tags.yml
       - name: debug
         run: cat .github/tags.yml
-      - uses: dorny/paths-filter@main
+      - uses: dorny/paths-filter@master
         id: filter
         with:
           filters: ".github/tags.yml"

@@ -16,6 +16,8 @@ jobs:
   dockerfile-changes:
     name: dockerfile-changes
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
     outputs:
       # Expose matched filters as job 'docker-images' output variable
       docker-images: ${{ steps.filter.outputs.changes }}
@@ -23,6 +25,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
+      - name: debug
+        run: git log --pretty=format:'%h' -n 2
       - name: Create tags.yml to grab changes
         id: get_tags
         run: |
@@ -34,7 +38,7 @@ jobs:
           done > .github/tags.yml
       - name: debug
         run: cat .github/tags.yml
-      - uses: dorny/paths-filter@master
+      - uses: mirpedrol/paths-filter@main
         id: filter
         with:
           filters: ".github/tags.yml"
@@ -58,6 +62,7 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
+          registry: mskcc.jfrog.io
           username: ${{ secrets.MSK_JFROG_USERNAME }}
           password: ${{ secrets.MSK_JFROG_TOKEN }}
       - name: Get docker repo name
@@ -66,12 +71,20 @@ jobs:
       - name: Get docker version
         id: docker_repo_version
         run: echo version=$( basename "${{ matrix.tags }}" ) >> $GITHUB_OUTPUT
-      - name: Build and export to Docker
+      - name: Build Docker
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: containers/${{ matrix.tags }}/
+          file: containers/${{ matrix.tags }}/Dockerfile
           load: true
           tags: ${{ env.REGISTRY }}/${{ steps.docker_repo_name.outputs.name}}:${{steps.docker_repo_version.outputs.version}}
       - name: Test image
         run: |
           docker run --rm ${{ env.REGISTRY }}/${{ steps.docker_repo_name.outputs.name}}:${{steps.docker_repo_version.outputs.version}}
+      - name: Export to Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: containers/${{ matrix.tags }}/
+          file: containers/${{ matrix.tags }}/Dockerfile
+          tags: ${{ env.REGISTRY }}/${{ steps.docker_repo_name.outputs.name}}:${{steps.docker_repo_version.outputs.version}}
+          push: true
